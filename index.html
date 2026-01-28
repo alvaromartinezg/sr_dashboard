@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SR Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Offline libs -->
+  <script src="xlsx.full.min.js"></script>
+  <script src="chart.umd.min.js"></script>
+</head>
+
+<body>
+
+<div class="page"><!-- REQUIRED by styles.css -->
+
+  <!-- HERO (yellow header expected by CSS) -->
+  <div class="hero">
+    <!-- Si luego quieres logo, descomenta -->
+    <!-- <img class="logo" src="bitel_logo.png" alt="bitel" /> -->
+
+    <h1>Service Request Dashboard</h1>
+    <p>SR status, pending priorities, and expiring items.</p>
+  </div>
+
+  <!-- KPIs -->
+  <header class="top">
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Export Time</div>
+        <div class="kpi-value" id="kpiExport">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total SR</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Pending</div>
+        <div class="kpi-value" id="kpiPending">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label" id="kpiHigh">HIGH: —</div>
+        <div class="kpi-value" id="kpiUrgent">URGENT: —</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Load bar -->
+  <div class="bar">
+    <label class="btn accent" style="display:inline-flex;gap:10px;align-items:center;">
+      <input id="fileInput" type="file"
+             accept=".xlsx,.xlsm,.xlsb,.xls,.csv"
+             style="display:none"/>
+      Load Excel
+    </label>
+
+    <div class="pill" id="pillCount">—</div>
+  </div>
+
+  <!-- Pending by Priority & Division -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;">
+      <div>
+        <h3 style="margin:0 0 6px;">SR Pending to proccess</h3>
+        <div class="hint">
+          Solo SR NO cerrados. Categorías: OVERDUE / HIGH / URGENT / NORMAL
+        </div>
+      </div>
+    </div>
+
+    <canvas id="chartPendingDiv" style="max-height:360px;"></canvas>
+  </div>
+
+  <!-- Expiring 48h -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;">
+      <div>
+        <h3 style="margin:0 0 6px;">Expiring in the Next 48 Hours</h3>
+        <div class="hint">Only pending SRs with 0–48h remaining.</div>
+      </div>
+      <div class="pill" id="pillExpiring">—</div>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>SR</th>
+          <th>Title</th>
+          <th>Division</th>
+          <th>End Time</th>
+          <th>Time Left</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tblExpiring"></tbody>
+    </table>
+  </div>
+
+  <!-- Filters -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;">
+      <div>
+        <h3 style="margin:0 0 6px;">Filters</h3>
+        <div class="hint">
+          Solo selectores. La tabla SR Detail se actualiza automáticamente.
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="gap:12px; margin-top:10px; flex-wrap:wrap;">
+      <div class="row" style="gap:8px;">
+        <span class="muted">Division</span>
+        <select id="fDivision"></select>
+      </div>
+
+      <div class="row" style="gap:8px;">
+        <span class="muted">Priority</span>
+        <select id="fPriority">
+          <option value="">All</option>
+          <option value="HIGH">HIGH (&lt;24h)</option>
+          <option value="URGENT">URGENT (24–48h)</option>
+          <option value="NORMAL">NORMAL (&gt;48h)</option>
+          <option value="OVERDUE">OVERDUE (&lt;0h)</option>
+        </select>
+      </div>
+
+      <label class="row" style="gap:8px; user-select:none;">
+        <input type="checkbox" id="chkShowClosed"/>
+        <span class="muted">Mostrar también cerrados</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- SR Detail -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;">
+      <div>
+        <h3 style="margin:0 0 6px;">SR Detail</h3>
+        <div class="hint">
+          Detalle completo según filtros seleccionados.
+        </div>
+      </div>
+    </div>
+
+    <table id="tblDetail" class="table">
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>SR</th>
+          <th>Title</th>
+          <th>Division</th>
+          <th>Send Date</th>
+          <th>End Time</th>
+          <th>Time Left</th>
+          <th>Remain Exec</th>
+          <th>Status</th>
+          <th>Eval Deadline</th>
+          <th>Reply Deadline</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div><!-- /page -->
+
+<!-- Missing libs banner -->
+<div id="missingLibsBanner" class="banner hidden">
+  Missing required offline libraries.
+</div>
+
+<!-- App -->
+<script src="app.js"></script>
+
+</body>
+</html>
