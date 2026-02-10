@@ -257,11 +257,15 @@ function fmtDMYHMS(d){
     kpiUrgent.textContent = `URGENT: ${urgent.toLocaleString()}`;
   }
 
-  function getExpiring48(){
-    return raw
-      .filter(r=>!r.isClosed && r.leftHours !== null && r.leftHours <= 48 && r.leftHours >= 0)
-      .sort((a,b)=>(a.leftHours??9999)-(b.leftHours??9999));
-  }
+function getExpiring48() {
+  return raw
+    .filter(r => {
+      if (r.isClosed) return false;   // excluir cerrados
+      if (r.leftHours <= 48) return true; // incluye OVERDUE (<0) y 0–48h
+      return false;
+    })
+    .sort((a, b) => a.leftHours - b.leftHours);
+}
 
   function renderTables(){
     // Expiring 48
