@@ -73,6 +73,14 @@ const tblDetail = !tblDetailHost
   ]);
 
   // --- Helpers ---
+
+// dd/mm/yyyy hh:mm:ss (para validaciones/mensajes)
+function fmtDMYHMS(d){
+  if (!d) return "";
+  const pad = (n)=>String(n).padStart(2,"0");
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
   function safeStr(v){
     if (v === null || v === undefined) return "";
     return String(v).trim();
@@ -409,7 +417,49 @@ const tblDetail = !tblDetailHost
         };
       })
       .filter(r=>r.sr || r.title);
+/* ===============================
+   VALIDACIÓN DE INTEGRIDAD DEL EXCEL
+   =============================== */
 
+const CONTROL_SR = "SR_VTP_20260103_1584438";
+const EXPECTED_END = new Date(2026, 0, 6, 8, 0, 0); // 06/01/2026 08:00:00
+
+const ctrl = raw.find(r => r.sr === CONTROL_SR);
+
+/* CASO 1: NO EXISTE EL SR DE CONTROL → DATA INCOMPLETA */
+if (!ctrl) {
+  alert(
+    "❌ DATA INCOMPLETA\n\n" +
+    "No se encontró el SR de control:\n" +
+    CONTROL_SR + "\n\n" +
+    "El archivo Excel está incompleto o no corresponde al período correcto."
+  );
+  return; // ⛔ DETIENE TODO EL PROCESAMIENTO
+}
+
+/* CASO 2: SR EXISTE PERO END TIME INCORRECTO → ERROR HORARIO */
+const got = ctrl.end;
+const ok =
+  (got instanceof Date) &&
+  !isNaN(got.getTime()) &&
+  got.getTime() === EXPECTED_END.getTime();
+
+if (!ok) {
+  alert(
+    "❌ REPORTE MAL EXPORTADO\n\n" +
+    "Revisar uso horario al exportar el Excel.\n\n" +
+    "SR control: " + CONTROL_SR + "\n" +
+    "End time esperado: 06/01/2026 08:00:00\n" +
+    "End time encontrado: " +
+    (got ? fmtDMYHMS(got) : "(vacío o inválido)")
+  );
+  return; // ⛔ DETIENE TODO EL PROCESAMIENTO
+}
+
+/* ===============================
+   FIN VALIDACIÓN
+   =============================== */
+	
     // Populate Division options
     setOptions(fDivision, unique(raw.map(r=>r.division)).sort());
 
