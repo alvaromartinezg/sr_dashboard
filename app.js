@@ -60,8 +60,7 @@ const tblDetail = !tblDetailHost
   // --- State ---
   let raw = [];          // all rows
   let filtered = [];     // rows shown in SR Detail
-  let exportTs = new Date();
-
+  let calcTs = null;
   let chartPending = null;
 
   // Closed-like statuses (NO entran en categorías de prioridad)
@@ -84,40 +83,6 @@ function fmtDMYHMS(d){
   function safeStr(v){
     if (v === null || v === undefined) return "";
     return String(v).trim();
-  }
-
-  // dd/mm/aa hh:mm (visual)
-  function fmtExportTsDMY(d){
-    if (!d) return "—";
-    const pad = (n)=>String(n).padStart(2,"0");
-    const yy = String(d.getFullYear()).slice(-2);
-    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${yy} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  // Parse "Date Export: mm/dd/aa ..." de forma segura (sin depender del locale)
-  function parseDateExport(text){
-    if (!text) return null;
-    const s = String(text).trim();
-
-    // mm/dd/yy [hh:mm[:ss]]
-    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
-    if (m){
-      const mm = +m[1];
-      const dd = +m[2];
-      let yy = +m[3];
-      if (yy < 100) yy = 2000 + yy;
-      const hh = m[4] ? +m[4] : 0;
-      const mi = m[5] ? +m[5] : 0;
-      const ss = m[6] ? +m[6] : 0;
-      const d = new Date(yy, mm-1, dd, hh, mi, ss, 0);
-      if (!isNaN(d.getTime())) return d;
-    }
-
-    // fallback: Date() nativo
-    const d2 = new Date(s);
-    if (!isNaN(d2.getTime())) return d2;
-
-    return null;
   }
 
   function toDate(v){
@@ -243,9 +208,9 @@ function fmtDMYHMS(d){
   }
 
   // --- KPIs & tables ---
-  function renderKPIs(){
-    kpiExport.textContent = fmtExportTsDMY(exportTs);
-    kpiTotal.textContent = raw.length.toLocaleString();
+	function renderKPIs(){
+	  if (kpiExport) kpiExport.textContent = calcTs ? fmtDate(calcTs) : "";
+	  kpiTotal.textContent = raw.length.toLocaleString();
 
     const pending = raw.filter(r=>!r.isClosed).length;
     kpiPending.textContent = pending.toLocaleString();
@@ -357,17 +322,7 @@ function getExpiring48() {
 
     const headers = json[headerRow].map(h=>safeStr(h));
     const rows = json.slice(headerRow+1);
-
-    // Export timestamp: parse Date Export (mm/dd/aa) safely
-    exportTs = new Date();
-    for (let i=0;i<headerRow;i++){
-      const rowStr = json[i].join(" ");
-      const m = rowStr.match(/Date\s*Export\s*:\s*(.+)$/i);
-      if (m){
-        const parsed = parseDateExport(m[1]);
-        if (parsed) exportTs = parsed;
-      }
-    }
+	calcTs = new Date();
 
     raw = rows
       .filter(r=> r.some(c=>safeStr(c)!==""))
@@ -391,13 +346,13 @@ function getExpiring48() {
         let priorityRank = 99;
 
         if (!isClosed){
-          leftHours = end ? hoursBetween(exportTs, end) : null;
+          leftHours = end ? hoursBetween(calcTs, end) : null;
           const pr = priorityFromHours(leftHours);
           priority = pr.p;
           priorityRank = pr.rank;
         } else {
           // cerrados: se pueden mostrar si el check está activo, pero NO entran a categorías
-          leftHours = end ? hoursBetween(exportTs, end) : null; // opcional (solo informativo)
+          leftHours = end ? hoursBetween(calcTs, end) : null;
         }
 
         const remainExecDays = safeStr(obj["Remain execution time"] ?? obj["Remain Exec Time"] ?? obj["Remain execution (day)"]);
