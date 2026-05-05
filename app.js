@@ -380,8 +380,8 @@ function getExpiring48() {
    VALIDACIÓN DE INTEGRIDAD DEL EXCEL
    =============================== */
 
-const CONTROL_SR = "SR_VTP_20260103_1584438";
-const EXPECTED_END = new Date(2026, 0, 6, 8, 0, 0); // 06/01/2026 08:00:00
+const CONTROL_SR = "SR_VTP_20260406_1340804";
+const EXPECTED_END = new Date(2026, 3, 9, 8, 0, 0); // 06/01/2026 08:00:00 -> New: 09/04/2026 08:00:00 -
 
 const ctrl = raw.find(r => r.sr === CONTROL_SR);
 
