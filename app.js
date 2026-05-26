@@ -209,7 +209,7 @@ function fmtDMYHMS(d){
 
   // --- KPIs & tables ---
 	function renderKPIs(){
-	  if (kpiExport) kpiExport.textContent = calcTs ? fmtDate(calcTs) : "";
+	  // kpiExport se llena desde la celda B6 al cargar el Excel
 	  kpiTotal.textContent = raw.length.toLocaleString();
 
     const pending = raw.filter(r=>!r.isClosed).length;
@@ -322,7 +322,18 @@ function getExpiring48() {
 
     const headers = json[headerRow].map(h=>safeStr(h));
     const rows = json.slice(headerRow+1);
-	calcTs = new Date();
+	// Leer System Time desde la celda B6
+const cellB6 = ws["B6"];
+const exportText = cellB6 ? (cellB6.w || cellB6.v || "") : "";
+
+if (kpiExport) {
+  kpiExport.textContent = exportText
+    ? `Date Export: ${exportText}`
+    : "";
+}
+
+// Mantener calcTs como fecha real para calcular vencimientos
+calcTs = new Date();
 
     raw = rows
       .filter(r=> r.some(c=>safeStr(c)!==""))
