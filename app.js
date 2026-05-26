@@ -62,6 +62,7 @@ const tblDetail = !tblDetailHost
   let filtered = [];     // rows shown in SR Detail
   let calcTs = null;
   let chartPending = null;
+  const EXCEL_URL = "SR_REPORT.XLSX";
 
   // Closed-like statuses (NO entran en categorías de prioridad)
   const CLOSEDLIKE_STATUSES = new Set([
@@ -438,7 +439,29 @@ if (!ok) {
 
     applyFilters();
   }
+async function loadExcelFromGithub(){
+  try {
+    if (pillCount) pillCount.textContent = "Loading Excel...";
 
+    const response = await fetch(EXCEL_URL + "?t=" + Date.now());
+
+    if (!response.ok) {
+      throw new Error("No se pudo descargar SR_REPORT.XLSX");
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+
+    const file = new File([arrayBuffer], "SR_REPORT.XLSX", {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    await loadExcelFile(file);
+
+  } catch (err) {
+    alert("No se pudo cargar el Excel.\n\n" + (err?.message || err));
+    console.error(err);
+  }
+}
   // --- Event wiring ---
   fileInput.addEventListener("change", async (e)=>{
     const file = e.target.files && e.target.files[0];
@@ -458,5 +481,6 @@ if (!ok) {
     el.addEventListener("change", applyFilters);
     el.addEventListener("input", applyFilters);
   });
-
+loadExcelFromGithub();
 })();
+
