@@ -327,9 +327,7 @@ const cellB6 = ws["B6"];
 const exportText = cellB6 ? (cellB6.w || cellB6.v || "") : "";
 
 if (kpiExport) {
-  kpiExport.textContent = exportText
-    ? `Date Export: ${exportText}`
-    : "";
+  kpiExport.textContent = exportText || "";
 }
 
 // Mantener calcTs como fecha real para calcular vencimientos
