@@ -210,7 +210,7 @@ function fmtDMYHMS(d){
   // --- KPIs & tables ---
 	function renderKPIs(){
 	  // kpiExport se llena desde la celda B6 al cargar el Excel
-	  kpiTotal.textContent = raw.length.toLocaleString();
+	kpiTotal.textContent = raw.length.toLocaleString();
 
     const pending = raw.filter(r=>!r.isClosed).length;
     kpiPending.textContent = pending.toLocaleString();
