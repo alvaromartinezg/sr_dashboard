@@ -62,7 +62,7 @@ const tblDetail = !tblDetailHost
   let filtered = [];     // rows shown in SR Detail
   let calcTs = null;
   let chartPending = null;
-  const EXCEL_URL = "SR_REPORT.XLSX";
+  const EXCEL_URL = "SR_REPORT.xlsx";
 
   // Closed-like statuses (NO entran en categorías de prioridad)
   const CLOSEDLIKE_STATUSES = new Set([
