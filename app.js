@@ -292,7 +292,23 @@ function getExpiring48() {
       type:"bar",
       data:{
         labels: divisions,
-        datasets: pri.map((p,i)=>({label:p, data: priData[i]}))
+            datasets: pri.map((p,i)=>({
+              label: p,
+              data: priData[i],
+              backgroundColor: {
+                OVERDUE: "#F4C7C3",  // rojo claro
+                HIGH: "#FFF176",     // amarillo
+                URGENT: "#B2EBF2",   // celeste
+                NORMAL: "#C8E6C9"    // verde suave
+              }[p],
+              borderColor: {
+                OVERDUE: "#C0392B",
+                HIGH: "#D4AC0D",
+                URGENT: "#17A2B8",
+                NORMAL: "#27AE60"
+              }[p],
+              borderWidth: 1
+            }))
       },
       options:{
         responsive:true,
@@ -483,4 +499,3 @@ async function loadExcelFromGithub(){
   });
 loadExcelFromGithub();
 })();
-
