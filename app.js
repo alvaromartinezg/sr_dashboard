@@ -263,7 +263,7 @@ function getExpiring48() {
         <td>${badgeHtml(r.priority)}</td>
         <td class="mono">${escapeHtml(r.sr)}</td>
         <td>${escapeHtml(r.title)}</td>
-        <td>${escapeHtml(r.division)}</td>
+        <td>${escapeHtml(r.serviceName)}</td>
         <td>${fmtDate(r.send)}</td>
         <td>${fmtDate(r.end)}</td>
         <td class="mono">${fmtLeft(r.leftHours)}</td>
