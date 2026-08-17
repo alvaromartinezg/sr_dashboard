@@ -390,6 +390,7 @@ calcTs = new Date();
 
         return {
           sr, title,
+		  division,
           serviceName,
           status: status || "(Blank)",
           send, end, updated,
