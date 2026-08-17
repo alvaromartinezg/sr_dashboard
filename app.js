@@ -384,12 +384,13 @@ calcTs = new Date();
         const remainExecDays = safeStr(obj["Remain execution time"] ?? obj["Remain Exec Time"] ?? obj["Remain execution (day)"]);
         const evalDeadline = safeStr(obj["Evaluate execution time"] ?? obj["Evaluate execution (time)"] ?? obj["Exec deadline"]);
         const replyDeadline = safeStr(obj["Reply time"] ?? obj["Reply deadline"]);
+		const serviceName = safeStr(obj["Service name"]);
 
         const division = parseDivisionFromImplementUnit(obj);
 
         return {
           sr, title,
-          division,
+          serviceName,
           status: status || "(Blank)",
           send, end, updated,
           leftHours,
