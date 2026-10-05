@@ -260,12 +260,11 @@ function getExpiring48() {
       if (r.priority==="OVERDUE") tr.classList.add("rowOverdue");
 
       tr.innerHTML = `
-		<td>${badgeHtml(r.priority)}</td>
-		<td class="mono">${escapeHtml(r.sr)}</td>
-		<td>${escapeHtml(r.title)}</td>
-		<td>${escapeHtml(r.division)}</td>
-		<td>${escapeHtml(r.serviceName)}</td>
-		<td>${fmtDate(r.send)}</td>
+        <td>${badgeHtml(r.priority)}</td>
+        <td class="mono">${escapeHtml(r.sr)}</td>
+        <td>${escapeHtml(r.title)}</td>
+        <td>${escapeHtml(r.division)}</td>
+        <td>${fmtDate(r.send)}</td>
         <td>${fmtDate(r.end)}</td>
         <td class="mono">${fmtLeft(r.leftHours)}</td>
         <td class="mono">${r.remainExecDays ?? ""}</td>
@@ -341,16 +340,111 @@ function getExpiring48() {
     const headers = json[headerRow].map(h=>safeStr(h));
     const rows = json.slice(headerRow+1);
 	// Leer System Time desde la celda B6
+// Leer Date export desde la celda B6
 const cellB6 = ws["B6"];
-const exportText = cellB6 ? (cellB6.w || cellB6.v || "") : "";
 
-if (kpiExport) {
-  kpiExport.textContent = exportText || "";
+let exportDate = null;
+
+if (cellB6) {
+  if (cellB6.v instanceof Date) {
+    exportDate = cellB6.v;
+  } else if (typeof cellB6.v === "number") {
+    const parsed = XLSX.SSF.parse_date_code(cellB6.v);
+
+    if (parsed) {
+      exportDate = new Date(
+        parsed.y,
+        parsed.m - 1,
+        parsed.d,
+        parsed.H || 0,
+        parsed.M || 0,
+        parsed.S || 0
+      );
+    }
+  } else {
+    exportDate = toDate(cellB6.v || cellB6.w);
+  }
 }
 
-// Mantener calcTs como fecha real para calcular vencimientos
-calcTs = new Date();
 
+// Mostrar fecha con formato:
+// 10/5/26, 8:11 AM
+if (kpiExport) {
+  if (exportDate && !isNaN(exportDate.getTime())) {
+
+    kpiExport.textContent = exportDate.toLocaleString("en-US", {
+      year: "2-digit",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
+
+  } else {
+    kpiExport.textContent = "Invalid date";
+  }
+}
+
+
+// Hora real de la computadora
+calcTs = new Date();
+// Validar desfase entre Date export y hora de la computadora - actualizado
+if (exportDate && !isNaN(exportDate.getTime())) {
+
+  const diffHours = Math.abs(
+    (calcTs.getTime() - exportDate.getTime()) / 36e5
+  );
+
+  if (diffHours >= 12) {
+
+    // Marcar visualmente el KPI como observado
+    if (kpiExport) {
+      kpiExport.style.color = "#b91c1c";
+      kpiExport.style.backgroundColor = "#fee2e2";
+      kpiExport.style.border = "1px solid #ef4444";
+      kpiExport.style.padding = "4px 6px";
+      kpiExport.style.borderRadius = "6px";
+    }
+
+    alert(
+      "⚠ DATE EXPORT OBSERVED\n\n" +
+      "The export date differs from the computer time by 12 hours or more.\n\n" +
+      "Date export: " +
+      exportDate.toLocaleString("en-US", {
+        year: "2-digit",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      }) +
+      "\n" +
+      "Computer time: " +
+      calcTs.toLocaleString("en-US", {
+        year: "2-digit",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      }) +
+      "\n\n" +
+      "Difference: " + diffHours.toFixed(1) + " hours"
+    );
+
+  } else {
+
+    // Estado normal
+    if (kpiExport) {
+      kpiExport.style.color = "";
+      kpiExport.style.backgroundColor = "";
+      kpiExport.style.border = "";
+      kpiExport.style.padding = "";
+      kpiExport.style.borderRadius = "";
+    }
+  }
+}
     raw = rows
       .filter(r=> r.some(c=>safeStr(c)!==""))
       .map(r=>{
@@ -385,14 +479,12 @@ calcTs = new Date();
         const remainExecDays = safeStr(obj["Remain execution time"] ?? obj["Remain Exec Time"] ?? obj["Remain execution (day)"]);
         const evalDeadline = safeStr(obj["Evaluate execution time"] ?? obj["Evaluate execution (time)"] ?? obj["Exec deadline"]);
         const replyDeadline = safeStr(obj["Reply time"] ?? obj["Reply deadline"]);
-		const serviceName = safeStr(obj["Service name"]);
 
         const division = parseDivisionFromImplementUnit(obj);
 
         return {
           sr, title,
-		  division,
-          serviceName,
+          division,
           status: status || "(Blank)",
           send, end, updated,
           leftHours,
